@@ -98,9 +98,14 @@ def text_save():
 
 def text_select(event):
     try:
-        text1.selection_get()
+        sel[0] = text1.get(SEL_FIRST, SEL_LAST)
+        x = root.winfo_pointerx()
+        y = root.winfo_pointery()
+        context_menu.post(x, y)
     except Exception:
+        sel[0] = ''
         list1.selection_set(last_selected[0])
+        context_menu.unpost()
 
 def edit_onfocus(event):
     if buffer[0] != '':
@@ -108,11 +113,33 @@ def edit_onfocus(event):
     if text1.get('1.0', END) != '':
         text1.delete('1.0', END)
 
+def popup_cut():
+    popup_copy()
+    popup_delete()
+
+def popup_copy():
+    root.clipboard_clear()
+    root.clipboard_append(sel[0])
+
+def popup_paste():
+    if sel[0]:
+        popup_delete()
+    text1.insert(INSERT, root.clipboard_get())
+
+def popup_delete():
+    text1.delete(SEL_FIRST, SEL_LAST)
+    sel[0] = ''
+
+def popup_cancel():
+    text1.selection_clear()
+    sel[0] = ''
+
 root = Tk()
 root.title('Linux Reference Book')
 edit1_value = StringVar()
 edit1_value.trace('w', search)
 list1_items = Variable(value=[])
+sel = ['']
 frame1 = ttk.Frame(root)
 label1 = Label(frame1, text='Поиск:')
 edit1 = ttk.Entry(frame1, textvariable=edit1_value)
@@ -140,6 +167,13 @@ frame2.pack(pady=50)
 btn_cancel.pack(side=LEFT, padx=10)
 btn_clear.pack(side=LEFT, padx=10)
 btn_save.pack(side=LEFT, padx=10)
+context_menu = Menu(root, tearoff=0)
+context_menu.add_command(label='Вырезать', command=popup_cut)
+context_menu.add_command(label='Копировать', command=popup_copy)
+context_menu.add_command(label='Вставить', command=popup_paste)
+context_menu.add_command(label='Удалить', command=popup_delete)
+context_menu.add_separator()
+context_menu.add_command(label='Отмена', command=popup_cancel)
 with open(js_name) as jf:
     db = json.load(jf)
 buffer = ['']
