@@ -137,7 +137,7 @@ def popup_cancel():
 root = Tk()
 root.title('Linux Reference Book')
 edit1_value = StringVar()
-edit1_value.trace('w', search)
+edit1_value.trace_add('write', search)
 list1_items = Variable(value=[])
 sel = ['']
 frame1 = ttk.Frame(root)
